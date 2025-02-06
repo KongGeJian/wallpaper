@@ -1,4 +1,6 @@
-## Welcome to GitHub Pages
+# wallpaper
+
+壁纸
 
 You can use the [editor on GitHub](https://github.com/KongGeJian/wallpaper/edit/main/README.md) to maintain and preview the content for your website in Markdown files.
 
