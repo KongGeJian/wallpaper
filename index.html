@@ -2,21 +2,21 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <title>图片浏览器</title>
+    <title>壁纸浏览</title>
     <style>
-        /* CSS 布局 */
         body {
             margin: 0;
             padding: 0;
             height: 100vh;
             display: flex;
             flex-direction: column;
+            font-family: Arial, sans-serif;
         }
 
         #header {
             background: #333;
             color: white;
-            padding: 10px;
+            padding: 10px 20px;
             display: flex;
             align-items: center;
         }
@@ -25,6 +25,10 @@
             padding: 8px 16px;
             margin-right: 20px;
             cursor: pointer;
+            background: #666;
+            border: none;
+            color: white;
+            border-radius: 4px;
         }
 
         #container {
@@ -50,11 +54,11 @@
             justify-content: center;
         }
 
-        /* 文件树样式 */
         .tree-item {
             cursor: pointer;
-            padding: 4px;
+            padding: 6px;
             user-select: none;
+            transition: background 0.2s;
         }
 
         .tree-item:hover {
@@ -77,93 +81,98 @@
         .expanded .children {
             display: block;
         }
+
+        .empty-directory {
+            color: #999;
+            font-style: italic;
+            margin-left: 20px;
+        }
     </style>
 </head>
 <body>
-    <!-- 页眉 -->
     <div id="header">
         <button id="refreshBtn">刷新文件树</button>
-        <h3>图片浏览器</h3>
+        <h3>壁纸浏览</h3>
     </div>
-
-    <!-- 主体容器 -->
     <div id="container">
-        <!-- 左侧文件树 -->
         <div id="fileTree"></div>
-
-        <!-- 右侧图片预览 -->
         <div id="preview">
-            <p>点击左侧文件树中的图片文件进行预览</p>
+            <p>点击左侧的图片文件进行预览</p>
         </div>
     </div>
 
     <script>
+        const BASE_URL = 'https://konggejian.github.io/wallpaper/';
+
         // 获取 DOM 元素
         const refreshBtn = document.getElementById('refreshBtn');
         const fileTree = document.getElementById('fileTree');
         const preview = document.getElementById('preview');
 
-        // 处理目录选择与文件树生成
-        async function loadDirectory() {
+        // 加载 JSON 数据并渲染文件树
+        async function loadFileTree() {
             try {
-                // 请求用户选择目录
-                const dirHandle = await window.showDirectoryPicker();
-                fileTree.innerHTML = ''; // 清空旧文件树
-                await buildFileTree(dirHandle, fileTree);
+                const response = await fetch('data.json');
+                if (!response.ok) throw new Error('加载数据失败');
+                const data = await response.json();
+                fileTree.innerHTML = ''; // 清空旧内容
+                renderTree(data.tree, fileTree, '');
             } catch (err) {
-                console.error('Error accessing directory:', err);
+                preview.innerHTML = `<p style="color: red">错误：${err.message}</p>`;
             }
         }
 
-        // 递归构建文件树
-        async function buildFileTree(dirHandle, parentElement) {
+        // 递归渲染文件树
+        function renderTree(node, parentElement, path) {
             const ul = document.createElement('ul');
-            for await (const entry of dirHandle.values()) {
+            
+            node.items.forEach(item => {
                 const li = document.createElement('li');
                 li.className = 'tree-item';
-                
-                if (entry.kind === 'directory') {
-                    // 处理目录
-                    li.innerHTML = `<div class="folder">${entry.name}</div>`;
+
+                if (item.contentType === 'directory') {
+                    // 渲染目录
+                    li.innerHTML = `<div class="folder">${item.name}</div>`;
                     const childrenDiv = document.createElement('div');
                     childrenDiv.className = 'children';
                     li.appendChild(childrenDiv);
 
-                    // 点击目录展开/折叠
+                    // 处理子项（递归）
+                    if (item.items && item.items.length > 0) {
+                        renderTree(item, childrenDiv, `${path}/${item.path}`);
+                    } else {
+                        childrenDiv.innerHTML = '<div class="empty-directory">（空目录）</div>';
+                    }
+
+                    // 点击展开/折叠
                     li.querySelector('.folder').addEventListener('click', (e) => {
                         e.stopPropagation();
                         li.classList.toggle('expanded');
                     });
-
-                    // 递归子目录
-                    await buildFileTree(entry, childrenDiv);
-                } else if (entry.kind === 'file' && isImageFile(entry.name)) {
-                    // 处理图片文件
-                    li.innerHTML = `<div class="file">${entry.name}</div>`;
+                } else if (item.contentType === 'file') {
+                    // 渲染文件
+                    li.innerHTML = `<div class="file">${item.name}</div>`;
                     
-                    // 点击文件预览图片
-                    li.querySelector('.file').addEventListener('click', async (e) => {
-                        e.stopPropagation();
-                        const file = await entry.getFile();
-                        const url = URL.createObjectURL(file);
-                        preview.innerHTML = `<img src="${url}" style="max-width: 100%; max-height: 80vh;">`;
+                    // 点击预览图片
+                    li.querySelector('.file').addEventListener('click', () => {
+                        const imageUrl = `${BASE_URL}${path}/${item.path}`;
+                        preview.innerHTML = `
+                            <img 
+                                src="${imageUrl}" 
+                                style="max-width: 100%; max-height: 80vh; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.1)"
+                                alt="${item.name}"
+                            >
+                        `;
                     });
                 }
                 ul.appendChild(li);
-            }
+            });
             parentElement.appendChild(ul);
         }
 
-        // 判断是否为图片文件
-        function isImageFile(filename) {
-            return /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(filename);
-        }
-
-        // 刷新按钮点击事件
-        refreshBtn.addEventListener('click', loadDirectory);
-
-        // 初始化提示
-        preview.innerHTML = '<p>请先点击"刷新文件树"按钮选择包含图片的目录</p>';
+        // 初始化
+        refreshBtn.addEventListener('click', loadFileTree);
+        loadFileTree(); // 页面加载时自动加载
     </script>
 </body>
 </html>
