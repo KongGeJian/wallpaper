@@ -1,0 +1,39 @@
+{
+  "tree": {
+    "name": "wallpaper",
+    "contentType": "directory",
+    "items": [
+      {
+        "name": "简约",
+        "contentType": "directory",
+        "items": [
+          {
+            "name": "001.png",
+            "contentType": "file"
+          },
+          {
+            "name": "002.png",
+            "contentType": "file"
+          }
+        ]
+      },
+      {
+        "name": "我的相机",
+        "contentType": "directory",
+        "items": []
+      },
+      {
+        "name": "desktop-01.jpg",
+        "contentType": "file"
+      },
+      {
+        "name": "desktop-02.jpg",
+        "contentType": "file"
+      },
+      {
+        "name": "desktop-03.jpg",
+        "contentType": "file"
+      }
+    ]
+  }
+}
