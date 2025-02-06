@@ -139,7 +139,7 @@
 
                     // 处理子项（递归）
                     if (item.items && item.items.length > 0) {
-                        renderTree(item, childrenDiv, `${path}/${item.path}`);
+                        renderTree(item, childrenDiv, `${path}/${item.name}`);
                     } else {
                         childrenDiv.innerHTML = '<div class="empty-directory">（空目录）</div>';
                     }
@@ -155,7 +155,7 @@
                     
                     // 点击预览图片
                     li.querySelector('.file').addEventListener('click', () => {
-                        const imageUrl = `${BASE_URL}${path}/${item.path}`;
+                        const imageUrl = `${BASE_URL}${path}/${item.name}`;
                         preview.innerHTML = `
                             <img 
                                 src="${imageUrl}" 
