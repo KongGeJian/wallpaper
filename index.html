@@ -29,6 +29,7 @@
             border: none;
             color: white;
             border-radius: 4px;
+            margin-left: auto;
         }
 
         #container {
@@ -91,8 +92,8 @@
 </head>
 <body>
     <div id="header">
-        <button id="refreshBtn">刷新文件树</button>
         <h3>壁纸浏览</h3>
+        <button id="refreshBtn">刷新文件树</button>
     </div>
     <div id="container">
         <div id="fileTree"></div>
@@ -102,7 +103,7 @@
     </div>
 
     <script>
-        const BASE_URL = 'https://konggejian.github.io/wallpaper/';
+        const BASE_URL = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
 
         // 获取 DOM 元素
         const refreshBtn = document.getElementById('refreshBtn');
@@ -112,11 +113,13 @@
         // 加载 JSON 数据并渲染文件树
         async function loadFileTree() {
             try {
-                const response = await fetch('data.json');
+                const response = await fetch('data.json', {
+                    mode: 'cors'
+                });
                 if (!response.ok) throw new Error('加载数据失败');
                 const data = await response.json();
                 fileTree.innerHTML = ''; // 清空旧内容
-                renderTree(data.tree, fileTree, '');
+                renderTree(data, fileTree, data.name);
             } catch (err) {
                 preview.innerHTML = `<p style="color: red">错误：${err.message}</p>`;
             }
