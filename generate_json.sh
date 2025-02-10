@@ -17,7 +17,7 @@ generate_json() {
     local first_item=true
 
     # Process directories first
-    DIRECTORIES=$(find "$dir_path" -mindepth 1 -maxdepth 1 -type d | LC_COLLATE=zh_CN.UTF-8 sort)
+    DIRECTORIES=$(find "$dir_path" -mindepth 1 -maxdepth 1 -type d ! -name ".*" | LC_ALL=zh_CN.UTF-8 sort)
     for item in $DIRECTORIES; do
         if [ "$first_item" = false ]; then
             json+=",\n"
@@ -27,7 +27,7 @@ generate_json() {
     done
 
     # Process files next
-    FILES=$(find "$dir_path" -mindepth 1 -maxdepth 1 -type f | LC_COLLATE=zh_CN.UTF-8 sort)
+    FILES=$(find "$dir_path" -mindepth 1 -maxdepth 1 -type f ! -name ".*" | LC_ALL=zh_CN.UTF-8 sort)
     for item in $FILES; do
         if [ "$first_item" = false ]; then
             json+=",\n"
